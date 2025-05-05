@@ -1,23 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+// Varsayılan React CSS'ini isterseniz silebilirsiniz
+// import './App.css';
+
+// Oluşturduğumuz FirmaList component'ini import ediyoruz
+import FirmaList from './components/FirmaList';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+      <header className="App-header" style={{ backgroundColor: '#282c34', minHeight: '10vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: 'calc(10px + 2vmin)', color: 'white' }}>
+        <h1>Nakliye Asistanım</h1>
       </header>
+      <main style={{ padding: '20px' }}>
+         {/* FirmaList component'ini buraya ekliyoruz */}
+        <FirmaList />
+      </main>
     </div>
   );
 }
