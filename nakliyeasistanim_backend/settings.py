@@ -31,18 +31,21 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
+    'django.contrib.admin',       
+    'django.contrib.auth',        
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    # Yeni eklenen uygulamalar
-    'operations', # Burayı ekleyin
-    'rest_framework', # Django REST Framework için eklenmiş olmalıydı (önceki adımda kurduk)
+    'django.contrib.sessions',    
+    'django.contrib.messages',    
+    'django.contrib.staticfiles', 
+    
+    'corsheaders',
+    'operations',
+    'rest_framework',
+    # ...
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', # Burayı ekleyin (listenin başında olması önerilir)
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -117,7 +120,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-
+CORS_ALLOW_ALL_ORIGINS = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
