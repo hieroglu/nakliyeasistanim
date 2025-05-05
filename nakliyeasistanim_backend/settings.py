@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Yeni eklenen uygulamalar
+    'operations', # Burayı ekleyin
+    'rest_framework', # Django REST Framework için eklenmiş olmalıydı (önceki adımda kurduk)
 ]
 
 MIDDLEWARE = [
