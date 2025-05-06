@@ -10,8 +10,7 @@ from .serializers import (
     IrsaliyeKaydiSerializer, TeslimEvragiSerializer, EFaturaSerializer, # Yeni Serializer'lar
     GiderKategoriSerializer, OtherGiderSerializer, TahsilatSerializer, OdemeSerializer # Yeni Serializer'lar
 )
-from rest_framework.permissions import AllowAny # İzin yönetimi için (şimdilik AllowAny kullanacağız)
-
+from rest_framework.permissions import IsAuthenticated
 class FirmaViewSet(viewsets.ModelViewSet):
     queryset = Firma.objects.all().order_by('firma_adi')
     serializer_class = FirmaSerializer
