@@ -45,19 +45,19 @@ class AracViewSet(viewsets.ModelViewSet):
 
 class IrsaliyeKaydiViewSet(viewsets.ModelViewSet):
     # ...
-    queryset = IrsaliyeKaydi.objects.all().order_by('-olusturma_tarihi') # <- Bu satırın doğru yazıldığından emin olun
+    queryset = IrsaliyeKaydi.objects.all().order_by('-kayit_tarihi') # <- Bu satırın doğru yazıldığından emin olun
     serializer_class = IrsaliyeKaydiSerializer
     permission_classes = [IsAuthenticated]
 
 class TeslimEvragiViewSet(viewsets.ModelViewSet):
     # ...
-    queryset = TeslimEvragi.objects.all().order_by('-olusturma_tarihi') # <- Bu satırın doğru yazıldığından emin olun
+    queryset = TeslimEvragi.objects.all().order_by('-kayit_tarihi') # <- Bu satırın doğru yazıldığından emin olun
     serializer_class = TeslimEvragiSerializer
     permission_classes = [IsAuthenticated]
 
 class GiderKategoriViewSet(viewsets.ModelViewSet):
     # ...
-    queryset = GiderKategori.objects.all().order_by('kategori_adi') # <- Bu satırın doğru yazıldığından emin olun
+    queryset = GiderKategori.objects.all().order_by('ad') # <- Bu satırın doğru yazıldığından emin olun
     serializer_class = GiderKategoriSerializer
     permission_classes = [IsAuthenticated]
 
