@@ -1,7 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include
-
-# simplejwt view'larını import ediyoruz
+from django.urls import path, include # include'u import ettiğinizden emin olun
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -16,4 +14,3 @@ urlpatterns = [
     # API endpoint'lerimiz
     path('api/', include('operations.urls')),
 ]
-

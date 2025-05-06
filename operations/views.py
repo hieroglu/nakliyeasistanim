@@ -11,6 +11,11 @@ from .serializers import (
     GiderKategoriSerializer, OtherGiderSerializer, TahsilatSerializer, OdemeSerializer # Yeni Serializer'lar
 )
 from rest_framework.permissions import IsAuthenticated
+class AtamaViewSet(viewsets.ModelViewSet):
+    queryset = Atama.objects.all().order_by('-atama_tarih_saat') # Atamalar modelinin queryset'ini belirledik
+    serializer_class = AtamaSerializer # Atama Serializer'ını kullandık
+    permission_classes = [IsAuthenticated] # Yetkilendirme sınıfını belirledik
+    # İleride özel aksiyonlar (örneğin atama belgesi oluşturma gibi) buraya eklenebilir.
 class FirmaViewSet(viewsets.ModelViewSet):
     queryset = Firma.objects.all().order_by('firma_adi')
     serializer_class = FirmaSerializer
@@ -30,8 +35,9 @@ class NakliyeKaydiViewSet(viewsets.ModelViewSet):
     # ...
     permission_classes = [IsAuthenticated]
 
-class AtamaViewSet(viewsets.ModelViewSet):
-    # ...
+class AracViewSet(viewsets.ModelViewSet):
+    queryset = Arac.objects.all().order_by('plaka') # <- Bu satırın doğru yazıldığından emin olun
+    serializer_class = AracSerializer
     permission_classes = [IsAuthenticated]
 
 class IrsaliyeKaydiViewSet(viewsets.ModelViewSet):
