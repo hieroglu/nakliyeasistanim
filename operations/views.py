@@ -29,10 +29,13 @@ class AracSahibiViewSet(viewsets.ModelViewSet):
 # Diğer tüm ViewSet'ler için aynı değişikliği yapın:
 class AracViewSet(viewsets.ModelViewSet):
     # ...
+    queryset = Arac.objects.all().order_by('plaka') # <- Bu satırın doğru yazıldığından emin olun
+    serializer_class = AracSerializer
     permission_classes = [IsAuthenticated]
 
 class NakliyeKaydiViewSet(viewsets.ModelViewSet):
-    # ...
+    queryset = NakliyeKaydi.objects.all().order_by('-olusturma_tarihi') # <- Bu satırın doğru yazıldığından emin olun
+    serializer_class = NakliyeKaydiSerializer
     permission_classes = [IsAuthenticated]
 
 class AracViewSet(viewsets.ModelViewSet):
@@ -42,28 +45,42 @@ class AracViewSet(viewsets.ModelViewSet):
 
 class IrsaliyeKaydiViewSet(viewsets.ModelViewSet):
     # ...
+    queryset = IrsaliyeKaydi.objects.all().order_by('-olusturma_tarihi') # <- Bu satırın doğru yazıldığından emin olun
+    serializer_class = IrsaliyeKaydiSerializer
     permission_classes = [IsAuthenticated]
 
 class TeslimEvragiViewSet(viewsets.ModelViewSet):
     # ...
+    queryset = TeslimEvragi.objects.all().order_by('-olusturma_tarihi') # <- Bu satırın doğru yazıldığından emin olun
+    serializer_class = TeslimEvragiSerializer
     permission_classes = [IsAuthenticated]
 
 class GiderKategoriViewSet(viewsets.ModelViewSet):
     # ...
+    queryset = GiderKategori.objects.all().order_by('kategori_adi') # <- Bu satırın doğru yazıldığından emin olun
+    serializer_class = GiderKategoriSerializer
     permission_classes = [IsAuthenticated]
 
 class OtherGiderViewSet(viewsets.ModelViewSet):
     # ...
+    queryset = OtherGider.objects.all().order_by('-tarih') # <- Bu satırın doğru yazıldığından emin olun
+    serializer_class = OtherGiderSerializer
     permission_classes = [IsAuthenticated]
 
 class EFaturaViewSet(viewsets.ModelViewSet):
     # ...
+    queryset = EFatura.objects.all().order_by('-olusturma_tarihi') # <- Bu satırın doğru yazıldığından emin olun
+    serializer_class = EFaturaSerializer
     permission_classes = [IsAuthenticated]
 
 class TahsilatViewSet(viewsets.ModelViewSet):
     # ...
+    queryset = Tahsilat.objects.all().order_by('-tarih') # <- Bu satırın doğru yazıldığından emin olun
+    serializer_class = TahsilatSerializer
     permission_classes = [IsAuthenticated]
 
 class OdemeViewSet(viewsets.ModelViewSet):
     # ...
+    queryset = Odeme.objects.all().order_by('-tarih') # <- Bu satırın doğru yazıldığından emin olun
+    serializer_class = OdemeSerializer
     permission_classes = [IsAuthenticated]
