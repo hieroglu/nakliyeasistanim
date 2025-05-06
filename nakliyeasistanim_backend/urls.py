@@ -1,8 +1,18 @@
 from django.contrib import admin
-from django.urls import path, include # include'u import ettiğinizden emin olun
+from django.urls import path, include
+
+# simplejwt view'larını import ediyoruz
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # API endpoint'leri için yeni path ekliyoruz
-    path('api/', include('operations.urls')), # operations uygulamasının URL'lerini /api/ altına dahil et
+    # simplejwt URL'leri
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), # Token almak için (login endpoint'i)
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), # Token yenilemek için
+
+    # API endpoint'lerimiz
+    path('api/', include('operations.urls')),
 ]
