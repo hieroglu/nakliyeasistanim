@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
 
-// Nakliye Durumları için seçenek listesi (Modellerden gelmeli ama şimdilik manuel yazalım)
-const NAKLIYE_STATUS_CHOICES = [
-    { value: 'Yeni', label: 'Yeni Kayıt' },
-    { value: 'Atandı', label: 'Araca Atandı' },
-    { value: 'Yolda', label: 'Yolda' },
-    { value: 'Teslim Edildi', label: 'Teslim Edildi' },
-    { value: 'Faturalandı', label: 'Faturalandırıldı' },
-    { value: 'Tahsil Edildi', label: 'Tahsil Edildi' },
-    { value: 'Kapandı', label: 'Kapandı' },
-    { value: 'İptal Edildi', label: 'İptal Edildi' },
-];
-// İleride bu veriler de backend'den çekilebilir veya sabit bir dosyada tutulabilir.
-
+// ... (NAKLIYE_STATUS_CHOICES - still here for form if needed, though backend handles default)
 
 function NakliyeKaydiForm() {
-  // Form alanları için state
+  const { id } = useParams(); // URL'den 'id' parametresini al (düzenleme için)
+  const navigate = useNavigate(); // Yönlendirme için
+
+  // Form alanları için state - ID'ye göre başlangıç değerleri ayarlanacak
   const [formData, setFormData] = useState({
-    firma_id: '', // İlişkili firma ID'si
+    firma_id: '',
     takip_no: '',
     yuk_adi: '',
     nakliye_tipi: '',
@@ -33,111 +25,162 @@ function NakliyeKaydiForm() {
     ek_masraflar_firma: '',
     odeme_vadesi: '',
     aciklamalar: '',
-    // Durum alanı backend tarafından otomatik 'Yeni' olarak atanabilir.
-    // isterseniz formda da seçenek olarak sunabilirsiniz.
-    // durum: 'Yeni',
   });
 
-  // Firma seçimi için firmaları çekmemiz gerekiyor
+  // Firma seçimi dropdown'ı için firmalar state'i
   const [firmalar, setFirmalar] = useState([]);
-  const [loadingFirmalar, setLoadingFirmalar] = useState(true);
-  const [errorFirmalar, setErrorFirmalar] = useState(null);
+
+  // Genel yükleme ve hata state'leri (hem firmalar hem nakliye detayı için)
+  const [loading, setLoading] = useState(true); // Başlangıçta yükleniyor
+  const [error, setError] = useState(null);
 
   // Form gönderildikten sonra durum bilgisi
   const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', null
 
-  // Firmaları çekmek için useEffect (Component ilk yüklendiğinde)
+  // Verileri çekme useEffect'i (Firmaları ve eğer düzenleme modu ise nakliye detayını çeker)
   useEffect(() => {
-    async function fetchFirmalar() {
-      try {
-        const response = await axios.get('/api/firmalar/');
-        // Sadece işi veren firmaları (müşterileri) filtreleyebiliriz, Firma modelinde 'firma_tipi' eklemiştik
-        // Eğer Firma modelinde firma_tipi kullanılıyorsa:
-        // const musteriFirmalar = response.data.filter(f => f.firma_tipi === 'Musteri');
-        // setFirmalar(musteriFirmalar);
-        setFirmalar(response.data); // Şimdilik tüm firmaları listeyelim
-        setLoadingFirmalar(false);
-      } catch (error) {
-        setErrorFirmalar(error);
-        setLoadingFirmalar(false);
-        console.error("Firmalar çekilirken hata oluştu:", error);
-      }
+    async function fetchData() {
+        try {
+            // 1. Firmaları Çek
+            const firmalarResponse = await axios.get('/api/firmalar/');
+            setFirmalar(firmalarResponse.data);
+
+            // 2. Eğer düzenleme modu ise (ID varsa) Nakliye Detayını Çek
+            if (id) {
+                const nakliyeResponse = await axios.get(`/api/nakliye-kayitlari/${id}/`);
+                const nakliyeData = nakliyeResponse.data;
+
+                // API'den gelen veriyi form state'ine uygun hale getir ve set et
+                setFormData({
+                    firma_id: nakliyeData.firma ? nakliyeData.firma.id : '',
+                    takip_no: nakliyeData.takip_no || '',
+                    yuk_adi: nakliyeData.yuk_adi || '',
+                    nakliye_tipi: nakliyeData.nakliye_tipi || '',
+                    miktar: nakliyeData.miktar || '',
+                    agirlik: nakliyeData.agirlik || '',
+                    hacim_ebat: nakliyeData.hacim_ebat || '',
+                    yukleme_adresi: nakliyeData.yukleme_adresi || '',
+                    // Tarih/Saat dönüşümleri: ISO string -> YYYY-MM-DDTHH:MM (datetime-local input formatı)
+                    yukleme_tarih_saat: nakliyeData.yukleme_tarih_saat ? new Date(nakliyeData.yukleme_tarih_saat).toISOString().slice(0, 16) : '',
+                    bosaltma_adresi: nakliyeData.bosaltma_adresi || '',
+                    bosaltma_tarih_saat: nakliyeData.bosaltma_tarih_saat ? new Date(nakliyeData.bosaltma_tarih_saat).toISOString().slice(0, 16) : '',
+                    // Sayı alanları (API number/string dönebilir, input string bekler veya number type ile number dönebilir)
+                    anlasilan_bedel: nakliyeData.anlasilan_bedel || '',
+                    ek_masraflar_firma: nakliyeData.ek_masraflar_firma || '',
+                    agirlik: nakliyeData.agirlik || '',
+                    // Tarih dönüşümü: YYYY-MM-DD (API formatı) -> YYYY-MM-DD (date input formatı)
+                    odeme_vadesi: nakliyeData.odeme_vadesi || '', // API YYYY-MM-DD formatında geliyorsa direkt kullanılabilir
+                    aciklamalar: nakliyeData.aciklamalar || '',
+                });
+            }
+
+            setLoading(false); // Tüm veriler çekildi (veya çekilmeye çalışıldı)
+        } catch (err) {
+            setError(err); // Hata durumunda genel hata state'ini ayarla
+            setLoading(false);
+            console.error("Form verileri çekilirken hata oluştu:", err.response ? err.response.data : err.message);
+        }
     }
-    fetchFirmalar();
-  }, []); // Boş dependency array
+
+    fetchData();
+     // id değiştiğinde veya component mount olduğunda çalışsın.
+     // firmalar state'i burada dependency olmamalı yoksa infinite loop olabilir eğer firma çekme bu state'i tetiklerse.
+     // Sadece id'ye bağımlı olması yeterli, firmalar ilk yüklemede çekilir.
+  }, [id]); // Dependency array: ID değiştiğinde bu effect tekrar çalışır
 
   // Form alanları değiştiğinde state'i güncelle
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
-      ...formData, // Mevcut form datasını kopyala
-      [name]: value, // Değişen alanı yeni değerle güncelle
+      ...formData,
+      [name]: value,
     });
   };
 
   // Form gönderildiğinde
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Sayfanın yeniden yüklenmesini engelle
+    e.preventDefault();
+    setSubmitStatus(null);
 
-    // Göndermeden önce veri formatlarını kontrol etme (tarihler, sayılar)
-    // Örneğin, tarih alanlarını Date objesine veya string formatına dönüştürmeniz gerekebilir
-    // API'ye göndereceğiniz format DRF serializer'ınıza uygun olmalı.
-    // Django DateTimeField için ISO 8601 formatı (YYYY-MM-DDTHH:MM:SSZ) genellikle uygundur.
-    // DateField için YYYY-MM-DD.
+    // API'ye gönderilecek datayı hazırla (Sayı ve Tarih/Saat dönüşümleri)
+    // Backend serializer'ının beklediği formatlara UYMALIDIR
     const dataToSend = {
         ...formData,
-        // Tarih/Saat alanlarını uygun formata dönüştürme (örnek)
-        // yukleme_tarih_saat: formData.yukleme_tarih_saat ? new Date(formData.yukleme_tarih_saat).toISOString() : null,
-        // bosaltma_tarih_saat: formData.bosaltma_tarih_saat ? new Date(formData.bosaltma_tarih_saat).toISOString() : null,
-        // Sayı alanlarını Number'a dönüştürme (input'tan string gelir)
+         // Sayı dönüşümleri: String -> Number (Boş string parseFloat ile NaN olur, kontrol etmeli)
         anlasilan_bedel: formData.anlasilan_bedel ? parseFloat(formData.anlasilan_bedel) : null,
         ek_masraflar_firma: formData.ek_masraflar_firma ? parseFloat(formData.ek_masraflar_firma) : null,
         agirlik: formData.agirlik ? parseFloat(formData.agirlik) : null,
-        // İlişkili ID alanının Number olduğundan emin olun
+         // Firma ID'si dönüşümü: String -> Number
         firma_id: formData.firma_id ? parseInt(formData.firma_id) : null,
+         // Tarih/Saat dönüşümleri: YYYY-MM-DDTHH:MM -> ISO 8601 String (YYYY-MM-DDTHH:MM:SS.sssZ)
+         // Backend DateTimeField genellikle ISO string kabul eder.
+         // Eğer input boşsa null göndermek önemlidir.
+        yukleme_tarih_saat: formData.yukleme_tarih_saat ? new Date(formData.yukleme_tarih_saat).toISOString() : null,
+        bosaltma_tarih_saat: formData.bosaltma_tarih_saat ? new Date(formData.bosaltma_tarih_saat).toISOString() : null,
+        // Ödeme vadesi dönüşümü: YYYY-MM-DD (date input) -> YYYY-MM-DD String (API DateField için)
+        // date input zaten doğru formatı veriyorsa dokunmaya gerek yok
+        odeme_vadesi: formData.odeme_vadesi || null, // Boşsa null gönder
+        aciklamalar: formData.aciklamalar || null, // Boşsa null gönder (TextField null=True ise)
+        hacim_ebat: formData.hacim_ebat || null,
+        nakliye_tipi: formData.nakliye_tipi || null,
+        miktar: formData.miktar || null,
     };
 
 
     try {
-      // API'ye POST isteği gönderiyoruz
-      const response = await axios.post('/api/nakliye-kayitlari/', dataToSend);
+        // Eğer ID varsa (düzenleme modu) PUT isteği gönder
+        if (id) {
+            await axios.put(`/api/nakliye-kayitlari/${id}/`, dataToSend);
+            console.log("Nakliye Kaydı başarıyla güncellendi.");
+            setSubmitStatus('success');
+            // Güncelleme sonrası listeleme sayfasına yönlendir
+            // Küçük bir gecikme ekleyelim ki kullanıcı mesajı görebilsin
+            setTimeout(() => navigate('/nakliyeler'), 1000);
 
-      console.log("Nakliye Kaydı başarıyla eklendi:", response.data);
-      setSubmitStatus('success');
-      // Formu temizle (isteğe bağlı)
-      setFormData({
-        firma_id: '', takip_no: '', yuk_adi: '', nakliye_tipi: '', miktar: '',
-        agirlik: '', hacim_ebat: '', yukleme_adresi: '', yukleme_tarih_saat: '',
-        bosaltma_adresi: '', bosaltma_tarih_saat: '', anlasilan_bedel: '',
-        ek_masraflar_firma: '', odeme_vadesi: '', aciklamalar: '',
-      });
-      // Başarı mesajını 3 saniye sonra kaldır
-      setTimeout(() => setSubmitStatus(null), 3000);
+        } else {
+            // ID yoksa (yeni kayıt modu) POST isteği gönder
+            await axios.post('/api/nakliye-kayitlari/', dataToSend);
+            console.log("Nakliye Kaydı başarıyla eklendi.");
+            setSubmitStatus('success');
+             // Formu temizle
+             setFormData({
+                firma_id: '', takip_no: '', yuk_adi: '', nakliye_tipi: '', miktar: '',
+                agirlik: '', hacim_ebat: '', yukleme_adresi: '', yukleme_tarih_saat: '',
+                bosaltma_adresi: '', bosaltma_tarih_saat: '', anlasilan_bedel: '',
+                ek_masraflar_firma: '', odeme_vadesi: '', aciklamalar: '',
+            });
+            // Başarı mesajını 3 saniye sonra kaldır
+            setTimeout(() => setSubmitStatus(null), 3000);
+        }
 
-    } catch (error) {
-      console.error("Nakliye Kaydı eklenirken hata oluştu:", error.response ? error.response.data : error.message);
-      setSubmitStatus('error');
-       // Hata mesajını 5 saniye sonra kaldır
-      setTimeout(() => setSubmitStatus(null), 5000);
+    } catch (err) {
+        console.error("Nakliye Kaydı işlemi (ekleme/güncelleme) sırasında hata oluştu:", err.response ? err.response.data : err.message);
+        setError(err); // Hata durumunda genel hata state'ini ayarla
+        setSubmitStatus('error');
+         // Hata mesajını 5 saniye sonra kaldır
+        setTimeout(() => setSubmitStatus(null), 5000);
     }
   };
 
-   if (loadingFirmalar) {
-    return <div>Firmalar yükleniyor... (Nakliye kaydı eklemek için gerekli)</div>;
-  }
+   // Eğer veriler çekilirken yükleme yapılıyorsa yükleme mesajı göster
+   if (loading) {
+       return <div>Yükleniyor...</div>;
+   }
 
-  if (errorFirmalar) {
-    return <div>Firmalar yüklenirken bir hata oluştu, nakliye kaydı eklenemiyor: {errorFirmalar.message}</div>;
-  }
+   // Eğer veri çekme sırasında hata oluştuysa hata mesajı göster
+   if (error) {
+       return <div>Veri çekilirken bir hata oluştu: {error.message}</div>;
+   }
 
 
   return (
     <div>
-      <h2>Yeni Nakliye Kaydı Ekle</h2>
+      {/* Başlık ID'ye göre değişsin */}
+      <h2>{id ? 'Nakliye Kaydını Düzenle' : 'Yeni Nakliye Kaydı Ekle'}</h2>
 
       {/* Başarı veya hata mesajları */}
-      {submitStatus === 'success' && <p style={{color: 'green'}}>Nakliye Kaydı başarıyla eklendi!</p>}
-      {submitStatus === 'error' && <p style={{color: 'red'}}>Nakliye Kaydı eklenirken hata oluştu.</p>}
+      {submitStatus === 'success' && <p style={{color: 'green'}}>İşlem başarıyla tamamlandı!</p>} {/* Mesajı genel yaptık */}
+      {submitStatus === 'error' && <p style={{color: 'red'}}>İşlem sırasında hata oluştu. {error?.message}</p>} {/* Hata mesajını göster */}
 
 
       <form onSubmit={handleSubmit}>
@@ -152,6 +195,7 @@ function NakliyeKaydiForm() {
             required // Bu alan zorunlu
           >
             <option value="">-- Firma Seçin --</option>
+            {/* Firmalar yüklenmiş olmalı çünkü loading kontrolünden geçtik */}
             {firmalar.map(firma => (
               <option key={firma.id} value={firma.id}>
                 {firma.firma_adi} ({firma.vkn_tckn})
@@ -160,8 +204,8 @@ function NakliyeKaydiForm() {
           </select>
         </div>
 
-        {/* Diğer Form Alanları */}
-        <div>
+        {/* Diğer Form Alanları (Önceki kodla aynı) */}
+         <div>
           <label htmlFor="takip_no">Takip Numarası:</label>
           <input type="text" id="takip_no" name="takip_no" value={formData.takip_no} onChange={handleChange} required />
         </div>
@@ -236,7 +280,8 @@ function NakliyeKaydiForm() {
 
         {/* Durum alanı backend tarafından otomatik atandığı için forma eklemedik */}
 
-        <button type="submit">Nakliye Kaydını Ekle</button>
+        <button type="submit">{id ? 'Güncelle' : 'Ekle'}</button> {/* Buton yazısı moda göre değişsin */}
+        {id && <button type="button" onClick={() => navigate('/nakliyeler')} style={{ marginLeft: '10px' }}>İptal</button>} {/* Düzenleme modundaysa İptal butonu */}
       </form>
     </div>
   );
