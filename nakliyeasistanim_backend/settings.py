@@ -131,3 +131,58 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# REST Framework Ayarları
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # Diğer kimlik doğrulama yöntemleri buraya eklenebilir (örneğin, SessionAuthentication)
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+        # Varsayılan olarak tüm API endpoint'leri kimliği doğrulanmış kullanıcılar için olacak.
+        # Eğer bazı endpoint'ler herkese açık olmalıysa, o ViewSet'te permission_classes=[AllowAny]
+        # şeklinde özel ayar yapmamız gerekecek.
+    )
+}
+
+# SIMPLE JWT Ayarları
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),  # Access token 5 dakika geçerli olsun (geliştirme için kısa tuttum)
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),   # Refresh token 1 gün geçerli olsun
+    "ROTATE_REFRESH_TOKENS": False, # Her refresh isteğinde yeni refresh token üretilsin mi? (Güvenlik artırır ama karmaşıklaştırır)
+    "BLACKLIST_AFTER_ROTATION": False, # Rotate edilirse eski refresh token blacklist'e eklensin mi?
+
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY, # Token'ları imzalamak için Django'nun SECRET_KEY'ini kullanabiliriz
+    "VERIFYING_KEY": "",
+    "AUDIENCE": None,
+    "ISSUER": None,
+    "JWK_URL": None,
+    "LEEWAY": 0,
+
+    "AUTH_HEADER_TYPES": ("Bearer",), # Header formatı: Authorization: Bearer <token>
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
+
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "TOKEN_TYPE_CLAIM": "token_type",
+    "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
+
+    "JTI_CLAIM": "jti",
+
+    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5), # Sliding token ayarları (şimdilik kullanmayacağız)
+    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
+
+    # Customize token serializers (opsiyonel, şimdilik varsayılanı kullanalım)
+    # "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
+    # "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
+    # "TOKEN_VERIFY_SERIALIZER": "rest_framework_simplejwt.serializers.TokenVerifySerializer",
+    # "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
+    # "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
+    # "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
+}
