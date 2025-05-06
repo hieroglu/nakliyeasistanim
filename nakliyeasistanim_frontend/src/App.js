@@ -1,9 +1,11 @@
 import React from 'react';
-// Varsayılan React CSS'ini isterseniz silebilirsiniz
-// import './App.css';
+// import './App.css'; // Varsayılan CSS
 
-// Oluşturduğumuz FirmaList component'ini import ediyoruz
 import FirmaList from './components/FirmaList';
+// Yeni component'leri import ediyoruz
+import NakliyeKaydiList from './components/NakliyeKaydiList';
+import NakliyeKaydiForm from './components/NakliyeKaydiForm';
+
 
 function App() {
   return (
@@ -12,8 +14,12 @@ function App() {
         <h1>Nakliye Asistanım</h1>
       </header>
       <main style={{ padding: '20px' }}>
-         {/* FirmaList component'ini buraya ekliyoruz */}
-        <FirmaList />
+         {/* Component'leri buraya ekliyoruz */}
+        <FirmaList /> {/* Firma Listesi */}
+        <hr style={{ margin: '40px 0'}}/> {/* Ayırıcı çizgi */}
+        <NakliyeKaydiList /> {/* Nakliye Kayıtları Listesi */}
+         <hr style={{ margin: '40px 0'}}/> {/* Ayırıcı çizgi */}
+        <NakliyeKaydiForm /> {/* Yeni Nakliye Kaydı Formu */}
       </main>
     </div>
   );
